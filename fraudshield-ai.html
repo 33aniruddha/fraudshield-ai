@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FraudShield AI — Advanced Fraud Detection</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── VARIABLES ─── */
+    :root {
+      --bg:        #060a14;
+      --bg2:       #0a1020;
+      --card-bg:   rgba(255,255,255,0.027);
+      --border:    rgba(0,212,255,0.14);
+      --cyan:      #00d4ff;
+      --purple:    #7b2ff7;
+      --green:     #00ff88;
+      --amber:     #ffb020;
+      --red:       #ff3860;
+      --txt:       #e8edf5;
+      --txt2:      #7a8499;
+      --txt3:      #3d4a60;
+      --fh:        'Rajdhani', sans-serif;
+      --fb:        'DM Sans', sans-serif;
+      --fm:        'Source Code Pro', monospace;
+    }
+
+    /* ─── BASE ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--txt);
+      font-family: var(--fb);
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* Dot-grid overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        radial-gradient(rgba(0,212,255,0.06) 1px, transparent 1px);
+      background-size: 30px 30px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    h1,h2,h3,h4,h5 {
+      font-family: var(--fh);
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    /* ─── NAVBAR ─── */
+    .navbar {
+      background: rgba(6,10,20,.88);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+      padding: .9rem 0;
+      position: sticky; top: 0; z-index: 999;
+    }
+    .navbar-brand {
+      font-family: var(--fh);
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      color: var(--txt) !important;
+    }
+    .brand-accent { color: var(--cyan); text-shadow: 0 0 20px rgba(0,212,255,.45); }
+    .brand-tag { font-size: .6em; opacity: .45; vertical-align: middle; margin-left: 4px; }
+    .nav-link {
+      color: var(--txt2) !important;
+      font-family: var(--fh);
+      font-size: .82rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: .45rem 1rem !important;
+      transition: color .2s;
+      position: relative;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute; bottom: 0; left: 1rem; right: 1rem;
+      height: 1px; background: var(--cyan);
+      transform: scaleX(0); transition: transform .2s;
+    }
+    .nav-link:hover { color: var(--cyan) !important; }
+    .nav-link:hover::after { transform: scaleX(1); }
+    .navbar-toggler { border: 1px solid var(--border) !important; }
+    .navbar-toggler-icon { filter: invert(.6); }
+
+    /* ─── HERO ─── */
+    .hero {
+      position: relative;
+      padding: 7.5rem 0 5rem;
+      overflow: hidden;
+    }
+    .hero-orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(90px); pointer-events: none;
+    }
+    .orb-a { width:460px;height:460px; background:rgba(0,212,255,.06); top:-120px;right:-80px; }
+    .orb-b { width:320px;height:320px; background:rgba(123,47,247,.09); bottom:0;left:25%; }
+    .orb-c { width:200px;height:200px; background:rgba(0,255,136,.05); bottom:40px;right:10%; }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: rgba(0,212,255,.07);
+      border: 1px solid rgba(0,212,255,.22);
+      border-radius: 100px;
+      padding: .35rem 1rem;
+      font-family: var(--fm); font-size: .72rem;
+      color: var(--cyan); letter-spacing: .1em;
+      margin-bottom: 2rem;
+      animation: fadeDown .6s ease both;
+    }
+    .live-dot {
+      width:7px;height:7px; border-radius:50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.35} }
+    @keyframes fadeDown { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeUp   { from{opacity:0;transform:translateY(14px)}  to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeIn   { from{opacity:0;transform:translateY(8px)}   to{opacity:1;transform:translateY(0)} }
+    @keyframes spin     { to{transform:rotate(360deg)} }
+
+    .hero h1 {
+      font-size: clamp(2.8rem,7vw,5.8rem);
+      line-height: 1.02; margin-bottom: 1.5rem;
+      animation: fadeUp .7s .1s ease both;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--cyan);
+      text-shadow: 0 0 50px rgba(0,212,255,.35);
+    }
+    .hero-sub {
+      font-size: 1rem; color: var(--txt2);
+      max-width: 540px; margin-bottom: 2.5rem;
+      animation: fadeUp .7s .2s ease both;
+    }
+    .hero-stats {
+      display:flex; gap:2.5rem; flex-wrap:wrap;
+      animation: fadeUp .7s .3s ease both;
+    }
+    .stat-n { font-family:var(--fh); font-size:2rem; color:var(--cyan); line-height:1; }
+    .stat-l { font-size:.72rem; color:var(--txt3); letter-spacing:.12em; text-transform:uppercase; margin-top:.1rem; }
+
+    .hero-scroll-hint {
+      margin-top: 3.5rem;
+      display: flex; align-items:center; gap:.75rem;
+      font-family:var(--fm); font-size:.7rem; color:var(--txt3); letter-spacing:.1em;
+      animation: fadeUp .7s .5s ease both;
+    }
+    .scroll-line {
+      width: 48px; height: 1px;
+      background: linear-gradient(90deg, var(--cyan), transparent);
+    }
+
+    /* ─── SECTION DIVIDER ─── */
+    .s-div {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+    }
+
+    /* ─── SECTION COMMON ─── */
+    .s-pad { padding: 6rem 0; position: relative; }
+    .s-tag {
+      font-family: var(--fm); font-size: .68rem;
+      color: var(--cyan); letter-spacing: .22em;
+      text-transform: uppercase; margin-bottom: .4rem;
+    }
+    .s-title { font-size: clamp(1.8rem,4vw,2.75rem); line-height: 1.12; margin-bottom: 1rem; }
+
+    .callout {
+      display:flex; gap:.6rem; align-items:flex-start;
+      border-radius: 8px; padding: .75rem 1rem;
+      font-size: .82rem; margin-top: 1.25rem;
+    }
+    .callout-info  { background:rgba(0,212,255,.07); border:1px solid rgba(0,212,255,.2); color:var(--txt2); }
+    .callout-warn  { background:rgba(255,176,32,.06); border:1px solid rgba(255,176,32,.2); color:var(--amber); }
+    .callout-safe  { background:rgba(0,255,136,.05); border:1px solid rgba(0,255,136,.2); color:var(--green); }
+    .callout-purp  { background:rgba(123,47,247,.07); border:1px solid rgba(123,47,247,.2); color:#a97cff; }
+
+    /* ─── GLASS CARD ─── */
+    .g-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 2rem;
+      backdrop-filter: blur(8px);
+      position: relative; overflow: hidden;
+      transition: border-color .3s, box-shadow .3s;
+    }
+    .g-card::before {
+      content:''; position:absolute; inset:0; border-radius:16px;
+      background: linear-gradient(135deg, rgba(0,212,255,.03) 0%, transparent 55%);
+      pointer-events:none;
+    }
+    .g-card:hover {
+      border-color: rgba(0,212,255,.3);
+      box-shadow: 0 0 48px rgba(0,212,255,.05);
+    }
+    .g-card.purp { border-color: rgba(123,47,247,.18); }
+    .g-card.purp:hover { border-color:rgba(123,47,247,.4); box-shadow:0 0 48px rgba(123,47,247,.07); }
+    .g-card.green { border-color: rgba(0,255,136,.14); }
+    .g-card.green:hover { border-color:rgba(0,255,136,.35); box-shadow:0 0 48px rgba(0,255,136,.05); }
+
+    .c-icon {
+      width:48px;height:48px; border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.3rem; margin-bottom:1.5rem;
+    }
+    .ci-cyan   { background:rgba(0,212,255,.1);  color:var(--cyan);   }
+    .ci-purp   { background:rgba(123,47,247,.1); color:var(--purple); }
+    .ci-green  { background:rgba(0,255,136,.1);  color:var(--green);  }
+
+    .c-title { font-size:1.35rem; margin-bottom:.4rem; }
+    .c-desc  { font-size:.88rem; color:var(--txt2); margin-bottom:1.5rem; }
+
+    /* ─── FORMS ─── */
+    .form-control, .form-select {
+      background: rgba(255,255,255,.04) !important;
+      border: 1px solid rgba(255,255,255,.08) !important;
+      color: var(--txt) !important;
+      border-radius: 8px !important;
+      padding: .72rem 1rem !important;
+      font-family: var(--fb) !important; font-size: .88rem !important;
+      transition: border-color .2s, box-shadow .2s !important;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: rgba(0,212,255,.4) !important;
+      box-shadow: 0 0 0 3px rgba(0,212,255,.09) !important;
+      outline: none !important;
+    }
+    .form-control::placeholder { color: var(--txt3) !important; }
+    .form-select option { background:#0a1020; color:var(--txt); }
+    .form-label {
+      font-family:var(--fh); font-size:.8rem; letter-spacing:.06em;
+      color:var(--txt2); text-transform:uppercase; margin-bottom:.45rem;
+    }
+
+    /* ─── BUTTONS ─── */
+    .btn-ai {
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:.55rem; width:100%;
+      padding: .78rem 1.75rem;
+      border:none; border-radius:8px; cursor:pointer;
+      font-family:var(--fh); font-size:1rem; font-weight:600;
+      letter-spacing:.1em; text-transform:uppercase;
+      transition: transform .18s, box-shadow .18s;
+    }
+    .btn-ai:hover   { transform:translateY(-2px); }
+    .btn-ai:active  { transform:translateY(0);    }
+    .btn-ai:disabled { opacity:.55; cursor:not-allowed; transform:none; }
+
+    .btn-cyan  { background:linear-gradient(135deg,var(--cyan),#009bbd); color:#000; }
+    .btn-cyan:hover  { box-shadow:0 8px 28px rgba(0,212,255,.3); }
+    .btn-purp  { background:linear-gradient(135deg,var(--purple),#4f1ba0); color:#fff; }
+    .btn-purp:hover  { box-shadow:0 8px 28px rgba(123,47,247,.35); }
+    .btn-green { background:linear-gradient(135deg,var(--green),#00cc6a); color:#000; }
+    .btn-green:hover { box-shadow:0 8px 28px rgba(0,255,136,.3); }
+
+    /* ─── RESULT BOXES ─── */
+    .r-box {
+      margin-top:1.75rem; border-radius:12px;
+      overflow:hidden; animation: fadeIn .4s ease;
+    }
+    .r-head {
+      display:flex; align-items:center; gap:.7rem;
+      padding: .9rem 1.25rem;
+      font-family:var(--fh); font-size:.95rem; letter-spacing:.06em;
+    }
+    .r-body { padding:1.25rem; }
+
+    .r-low      { background:rgba(0,255,136,.05);  border:1px solid rgba(0,255,136,.22); }
+    .r-medium   { background:rgba(255,176,32,.05); border:1px solid rgba(255,176,32,.22); }
+    .r-high     { background:rgba(255,56,96,.06);  border:1px solid rgba(255,56,96,.25); }
+    .r-critical { background:rgba(255,56,96,.09);  border:1px solid rgba(255,56,96,.4);  }
+
+    .r-low    .r-head { background:rgba(0,255,136,.1);  color:var(--green); }
+    .r-medium .r-head { background:rgba(255,176,32,.1); color:var(--amber); }
+    .r-high   .r-head { background:rgba(255,56,96,.1);  color:var(--red);   }
+    .r-critical .r-head { background:rgba(255,56,96,.18); color:var(--red);  }
+
+    /* Gauge */
+    .gauge-wrap { display:flex; align-items:center; gap:1.5rem; margin-bottom:1.25rem; }
+    .gauge-svg  { flex-shrink:0; position:relative; width:82px; height:82px; }
+    .gauge-svg svg { transform:rotate(-90deg); }
+    .g-bg  { fill:none; stroke:rgba(255,255,255,.07); stroke-width:6; }
+    .g-arc { fill:none; stroke-width:6; stroke-linecap:round; transition:stroke-dashoffset 1.1s cubic-bezier(.4,0,.2,1); }
+    .gauge-num {
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      font-family:var(--fh); font-size:1.2rem; font-weight:700;
+    }
+    .gauge-info { flex:1; }
+    .gauge-lvl  { font-family:var(--fh); font-size:1.45rem; line-height:1; margin-bottom:.2rem; }
+    .gauge-sub  { font-size:.78rem; color:var(--txt2); }
+    .risk-bar   { height:4px; border-radius:100px; background:rgba(255,255,255,.07); margin-top:.65rem; overflow:hidden; }
+    .risk-fill  { height:100%; border-radius:100px; transition:width 1.1s cubic-bezier(.4,0,.2,1); }
+
+    /* Flags / Recs */
+    .f-list, .r-list { list-style:none; padding:0; margin:0; }
+    .f-item, .r-item {
+      display:flex; align-items:flex-start; gap:.7rem;
+      padding: .55rem 0;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      font-size:.86rem; color:var(--txt2);
+    }
+    .f-item:last-child, .r-item:last-child { border-bottom:none; }
+    .f-item i { color:var(--red); margin-top:2px; flex-shrink:0; }
+    .r-item i { color:var(--cyan); margin-top:2px; flex-shrink:0; }
+
+    .r-sec-label {
+      font-family:var(--fh); font-size:.75rem; letter-spacing:.14em;
+      text-transform:uppercase; color:var(--txt3);
+      margin-bottom:.45rem; margin-top:1.1rem;
+    }
+
+    .expl {
+      font-size:.87rem; color:var(--txt2); line-height:1.65;
+      background:rgba(255,255,255,.02); border-radius:8px;
+      padding: .7rem 1rem;
+      border-left: 2px solid rgba(0,212,255,.3);
+    }
+
+    /* Verdict banner */
+    .v-banner {
+      display:flex; align-items:center; gap:1rem;
+      border-radius:8px; padding:1rem;  margin-bottom:1rem;
+    }
+    .v-banner.safe    { background:rgba(0,255,136,.07); border:1px solid rgba(0,255,136,.22); }
+    .v-banner.warn    { background:rgba(255,176,32,.07); border:1px solid rgba(255,176,32,.22); }
+    .v-banner.danger  { background:rgba(255,56,96,.07);  border:1px solid rgba(255,56,96,.25); }
+    .v-emoji { font-size:2rem; line-height:1; }
+    .v-title { font-family:var(--fh); font-size:1.1rem; line-height:1.2; }
+    .v-sub   { font-size:.78rem; color:var(--txt2); }
+
+    /* Confidence bar */
+    .conf-row { display:flex; justify-content:space-between; font-size:.78rem; color:var(--txt3); margin-bottom:.35rem; }
+
+    /* URL tag */
+    .url-tag {
+      background: rgba(255,255,255,.025); border:1px solid rgba(255,255,255,.06);
+      border-radius:8px; padding: .55rem 1rem; margin-bottom:1rem;
+    }
+    .url-tag .lbl { font-size:.68rem; color:var(--txt3); margin-bottom:.2rem; }
+    .url-tag .val { font-family:var(--fm); font-size:.78rem; color:var(--txt2); word-break:break-all; }
+
+    /* Error */
+    .r-err {
+      margin-top:1.5rem; border-radius:10px; padding: .9rem 1.1rem;
+      background:rgba(255,56,96,.06); border:1px solid rgba(255,56,96,.22);
+      color:var(--red); font-size:.88rem;
+      display:flex; align-items:center; gap:.65rem;
+      animation: fadeIn .35s ease;
+    }
+
+    /* Spinner */
+    .spin-ring {
+      width:18px;height:18px; border-radius:50%;
+      border:2px solid rgba(0,0,0,.2);
+      border-top-color: #000;
+      animation: spin .7s linear infinite;
+    }
+    .spin-ring.light { border:2px solid rgba(255,255,255,.15); border-top-color:#fff; }
+
+    /* ─── SAFETY TIPS ─── */
+    .tip-card {
+      background: rgba(255,255,255,.02);
+      border: 1px solid rgba(255,255,255,.055);
+      border-radius:12px; padding:1.5rem;
+      height:100%;
+      transition: all .25s;
+    }
+    .tip-card:hover {
+      background: rgba(255,255,255,.035);
+      border-color: var(--border);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0,0,0,.3);
+    }
+    .tip-num { font-family:var(--fm); font-size:.68rem; color:var(--cyan); opacity:.65; margin-bottom:.9rem; letter-spacing:.1em; }
+    .tip-emoji { font-size:1.9rem; margin-bottom:.9rem; line-height:1; }
+    .tip-title { font-size:1rem; margin-bottom:.45rem; }
+    .tip-desc  { font-size:.84rem; color:var(--txt2); line-height:1.65; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background:rgba(0,0,0,.3);
+      border-top:1px solid var(--border);
+      padding:2rem 0;
+    }
+    .foot-brand { font-family:var(--fh); font-size:1.15rem; letter-spacing:.12em; }
+    .foot-txt   { font-size:.78rem; color:var(--txt3); }
+
+    /* ─── RESPONSIVE ─── */
+    @media(max-width:768px) {
+      .hero { padding:4.5rem 0 3.5rem; }
+      .s-pad { padding:4rem 0; }
+      .hero-stats { gap:1.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ NAVBAR ═══════════════════════════ -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="#">
+      <i class="bi bi-shield-fill-check brand-accent"></i>
+      FRAUD<span class="brand-accent">SHIELD</span><span class="brand-tag">AI</span>
+    </a>
+    <button class="navbar-toggler" type="button"
+      data-bs-toggle="collapse" data-bs-target="#navMenu" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav ms-auto gap-0 gap-lg-1 mt-2 mt-lg-0">
+        <li class="nav-item"><a class="nav-link" href="#transaction">Transaction</a></li>
+        <li class="nav-item"><a class="nav-link" href="#scam">Scam Msg</a></li>
+        <li class="nav-item"><a class="nav-link" href="#phishing">Phishing</a></li>
+        <li class="nav-item"><a class="nav-link" href="#tips">Safety Tips</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+<section class="hero">
+  <div class="hero-orb orb-a"></div>
+  <div class="hero-orb orb-b"></div>
+  <div class="hero-orb orb-c"></div>
+
+  <div class="container position-relative">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <div class="hero-badge">
+          <span class="live-dot"></span>
+          AI-Powered Detection &nbsp;·&nbsp; Real-Time Analysis &nbsp;·&nbsp; v3.1
+        </div>
+        <h1>SHIELD YOUR<br><em>FINANCES</em><br>FROM FRAUD</h1>
+        <p class="hero-sub">
+          Real-time AI analysis of suspicious transactions, scam messages, and phishing
+          URLs — powered by advanced language models to protect you before it's too late.
+        </p>
+        <div class="hero-stats">
+          <div>
+            <div class="stat-n">99.3%</div>
+            <div class="stat-l">Detection Rate</div>
+          </div>
+          <div>
+            <div class="stat-n">3</div>
+            <div class="stat-l">AI Analyzers</div>
+          </div>
+          <div>
+            <div class="stat-n">24/7</div>
+            <div class="stat-l">Protection</div>
+          </div>
+          <div>
+            <div class="stat-n">0ms</div>
+            <div class="stat-l">Data Stored</div>
+          </div>
+        </div>
+        <div class="hero-scroll-hint">
+          <span class="scroll-line"></span>
+          SCROLL TO ANALYZE
+        </div>
+      </div>
+      <div class="col-lg-5 d-none d-lg-flex justify-content-center">
+        <!-- Decorative shield graphic -->
+        <div style="position:relative;width:280px;height:280px;">
+          <svg viewBox="0 0 280 280" width="280" height="280" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="sg" cx="50%" cy="40%" r="60%">
+                <stop offset="0%" stop-color="rgba(0,212,255,.18)"/>
+                <stop offset="100%" stop-color="rgba(0,212,255,.02)"/>
+              </radialGradient>
+            </defs>
+            <!-- Outer rings -->
+            <circle cx="140" cy="140" r="130" fill="none" stroke="rgba(0,212,255,.07)" stroke-width="1"/>
+            <circle cx="140" cy="140" r="108" fill="none" stroke="rgba(0,212,255,.1)" stroke-width="1" stroke-dasharray="4 6"/>
+            <circle cx="140" cy="140" r="85" fill="url(#sg)" stroke="rgba(0,212,255,.18)" stroke-width="1.5"/>
+            <!-- Shield path -->
+            <path d="M140 52 L186 74 L186 140 Q186 178 140 200 Q94 178 94 140 L94 74 Z"
+              fill="rgba(0,212,255,.08)" stroke="rgba(0,212,255,.45)" stroke-width="1.5" stroke-linejoin="round"/>
+            <!-- Checkmark -->
+            <polyline points="118,138 134,155 162,122"
+              fill="none" stroke="var(--cyan)" stroke-width="5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Rotating dashes -->
+            <circle cx="140" cy="140" r="126" fill="none"
+              stroke="rgba(0,212,255,.14)" stroke-width="1"
+              stroke-dasharray="3 14"
+              style="transform-origin:140px 140px;animation:spin 18s linear infinite"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="s-div"></div>
+
+<!-- ═══════════════════ TRANSACTION RISK ANALYZER ═══════════════════ -->
+<section class="s-pad" id="transaction">
+  <div class="container">
+    <div class="row g-5 align-items-start">
+
+      <!-- Left: description -->
+      <div class="col-lg-5">
+        <p class="s-tag">// ANALYZER 01</p>
+        <h2 class="s-title">Transaction<br>Risk Analyzer</h2>
+        <p style="color:var(--txt2);font-size:.95rem;line-height:1.8;">
+          Input your transaction details and let our AI evaluate the fraud risk level.
+          We analyze amounts, context, urgency signals, and recipient patterns to detect
+          potential fraud before you send money.
+        </p>
+        <div class="callout callout-info">
+          <i class="bi bi-shield-lock-fill mt-1" style="flex-shrink:0;color:var(--cyan);"></i>
+          <span>Your data is never stored or logged. Analysis runs in real-time and is discarded immediately.</span>
+        </div>
+        <div class="callout callout-warn mt-2">
+          <i class="bi bi-exclamation-triangle-fill mt-1" style="flex-shrink:0;"></i>
+          <span>Stop any transaction if the AI flags high or critical risk. Do not proceed under pressure.</span>
+        </div>
+      </div>
+
+      <!-- Right: form -->
+      <div class="col-lg-7">
+        <div class="g-card">
+          <div class="c-icon ci-cyan"><i class="bi bi-credit-card-2-front"></i></div>
+          <h3 class="c-title">Analyze Transaction</h3>
+          <p class="c-desc">Fill in the details below to get an instant AI risk assessment.</p>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Amount (₹ / $)</label>
+              <input type="number" class="form-control" id="txAmt" placeholder="e.g. 50000">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Transaction Type</label>
+              <select class="form-select" id="txType">
+                <option value="" disabled selected>Select type</option>
+                <option>UPI Transfer</option>
+                <option>Bank Wire</option>
+                <option>Crypto Transfer</option>
+                <option>Online Purchase</option>
+                <option>Cash Withdrawal</option>
+                <option>International Wire</option>
+                <option>Gift Card Purchase</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Recipient / Merchant Name</label>
+              <input type="text" class="form-control" id="txRecip" placeholder="e.g. John Doe  /  Amazon.in">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Description / Reason for Transaction</label>
+              <textarea class="form-control" id="txDesc" rows="3"
+                placeholder="e.g. Payment for investment scheme promising 40% monthly returns..."></textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Urgency Level</label>
+              <select class="form-select" id="txUrg">
+                <option value="" disabled selected>Select urgency</option>
+                <option>No urgency mentioned</option>
+                <option>Slightly urgent</option>
+                <option>Very urgent / time-limited</option>
+                <option>Threatened consequences</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">How Did You Meet Them?</label>
+              <select class="form-select" id="txContact">
+                <option value="" disabled selected>Select</option>
+                <option>Known person (family / friend)</option>
+                <option>Established business</option>
+                <option>Met online recently</option>
+                <option>Cold call / SMS</option>
+                <option>Social media</option>
+                <option>Unknown</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <button class="btn-ai btn-cyan" id="txBtn" onclick="analyzeTx()">
+                <span id="txBtnT"><i class="bi bi-cpu"></i> Analyze Transaction Risk</span>
+                <span id="txBtnL" class="d-none"><span class="spin-ring"></span> Analyzing…</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="txResult"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="s-div"></div>
+
+<!-- ═══════════════════ SCAM MESSAGE ANALYZER ═══════════════════ -->
+<section class="s-pad" id="scam" style="background:rgba(123,47,247,.025);">
+  <div class="container">
+    <div class="row g-5 align-items-start flex-lg-row-reverse">
+
+      <!-- Left: description -->
+      <div class="col-lg-5">
+        <p class="s-tag">// ANALYZER 02</p>
+        <h2 class="s-title">Scam Message<br>Analyzer</h2>
+        <p style="color:var(--txt2);font-size:.95rem;line-height:1.8;">
+          Paste any suspicious SMS, email, or chat message. Our AI identifies social
+          engineering tactics, fake offers, lottery scams, impersonation, and fraudulent
+          communication patterns in seconds.
+        </p>
+        <div class="callout callout-purp">
+          <i class="bi bi-lightbulb-fill mt-1" style="flex-shrink:0;"></i>
+          <span>Works with messages in any language — Hindi, English, Tamil, and more. Copy &amp; paste the full text for best results.</span>
+        </div>
+      </div>
+
+      <!-- Right: form -->
+      <div class="col-lg-7">
+        <div class="g-card purp">
+          <div class="c-icon ci-purp"><i class="bi bi-chat-dots"></i></div>
+          <h3 class="c-title">Analyze Message</h3>
+          <p class="c-desc">Paste the suspicious message to detect scam patterns instantly.</p>
+
+          <div class="mb-3">
+            <label class="form-label">Suspicious Message Text</label>
+            <textarea class="form-control" id="scamMsg" rows="6"
+              placeholder="Paste the full SMS, email, or chat message here…&#10;&#10;e.g. 'Congratulations! You've won ₹5,00,000 in the KBC lottery. Call immediately: +91-XXXXX to claim your prize before midnight or it will be forfeited...'"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Message Source / Platform</label>
+            <select class="form-select" id="scamSrc">
+              <option value="" disabled selected>Where did you receive this?</option>
+              <option>SMS / Text Message</option>
+              <option>WhatsApp</option>
+              <option>Email</option>
+              <option>Telegram</option>
+              <option>Instagram / Facebook DM</option>
+              <option>Phone Call (transcribed)</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <button class="btn-ai btn-purp" id="scamBtn" onclick="analyzeScam()">
+            <span id="scamBtnT"><i class="bi bi-shield-exclamation"></i> Detect Scam Patterns</span>
+            <span id="scamBtnL" class="d-none"><span class="spin-ring light"></span> Analyzing…</span>
+          </button>
+
+          <div id="scamResult"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="s-div"></div>
+
+<!-- ═══════════════════ PHISHING URL CHECKER ═══════════════════ -->
+<section class="s-pad" id="phishing">
+  <div class="container">
+    <div class="row g-5 align-items-start">
+
+      <!-- Left: description -->
+      <div class="col-lg-5">
+        <p class="s-tag">// ANALYZER 03</p>
+        <h2 class="s-title">Phishing URL<br>Checker</h2>
+        <p style="color:var(--txt2);font-size:.95rem;line-height:1.8;">
+          Submit any suspicious link and our AI will analyze it for phishing indicators —
+          fake domains, lookalike spelling, suspicious TLDs, redirect chains, and
+          impersonation of trusted brands.
+        </p>
+        <div class="callout callout-safe">
+          <i class="bi bi-shield-lock-fill mt-1" style="flex-shrink:0;"></i>
+          <span><strong>Never click</strong> a suspicious link. Paste it here safely — we analyze the URL structure without visiting it.</span>
+        </div>
+      </div>
+
+      <!-- Right: form -->
+      <div class="col-lg-7">
+        <div class="g-card green">
+          <div class="c-icon ci-green"><i class="bi bi-link-45deg"></i></div>
+          <h3 class="c-title">Analyze URL</h3>
+          <p class="c-desc">Enter the suspicious URL to scan for phishing indicators.</p>
+
+          <div class="mb-3">
+            <label class="form-label">Suspicious URL / Link</label>
+            <input type="text" class="form-control" id="phUrl"
+              placeholder="https://amaz0n-secure-login.xyz/verify?session=abc123">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">How Did You Receive This Link?</label>
+            <select class="form-select" id="phCtx">
+              <option value="" disabled selected>Select context</option>
+              <option>Email from unknown sender</option>
+              <option>SMS / WhatsApp message</option>
+              <option>Social media ad</option>
+              <option>Instant message / DM</option>
+              <option>QR code scan</option>
+              <option>Pop-up / Browser notification</option>
+              <option>Forwarded by contact</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">What Does the Message Claim This Link Is For?</label>
+            <input type="text" class="form-control" id="phClaim"
+              placeholder="e.g. Update KYC, claim lottery prize, track a package…">
+          </div>
+          <button class="btn-ai btn-green" id="phBtn" onclick="analyzePhish()">
+            <span id="phBtnT"><i class="bi bi-search"></i> Scan URL for Phishing</span>
+            <span id="phBtnL" class="d-none"><span class="spin-ring"></span> Scanning…</span>
+          </button>
+
+          <div id="phResult"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="s-div"></div>
+
+<!-- ═══════════════════ SAFETY TIPS ═══════════════════ -->
+<section class="s-pad" id="tips" style="background:rgba(0,0,0,.18);">
+  <div class="container">
+    <div class="text-center mb-5">
+      <p class="s-tag">// STAY PROTECTED</p>
+      <h2 class="s-title" style="font-size:clamp(1.8rem,4vw,2.75rem);">Safety Tips</h2>
+      <p style="color:var(--txt2);max-width:480px;margin:0 auto;font-size:.93rem;">
+        Essential practices to protect yourself from fraud, scams, and online threats every day.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-4">
+        <div class="tip-card">
+          <div class="tip-num">01 — OTPs &amp; PASSWORDS</div>
+          <div class="tip-emoji">🔐</div>
+          <h4 class="tip-title">Never Share OTPs</h4>
+          <p class="tip-desc">No legitimate bank, government body, or company will ever ask for your OTP, PIN, or password over a call, SMS, or email. Hang up immediately if asked.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="tip-card">
+          <div class="tip-num">02 — VERIFICATION</div>
+          <div class="tip-emoji">📞</div>
+          <h4 class="tip-title">Call Back Officially</h4>
+          <p class="tip-desc">Received a call claiming to be your bank? Hang up and call back on the official number printed on your card or the bank's website — never the number they gave you.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="tip-card">
+          <div class="tip-num">03 — URLS &amp; LINKS</div>
+          <div class="tip-emoji">🔍</div>
+          <h4 class="tip-title">Check URLs Carefully</h4>
+          <p class="tip-desc">Look for subtle misspellings ("amaz0n.com"), extra subdomains ("secure.paypal.attacker.net"), or unusual TLDs like .xyz, .tk, or .icu before entering any credentials.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="tip-card">
+          <div class="tip-num">04 — URGENCY TACTICS</div>
+          <div class="tip-emoji">⚠️</div>
+          <h4 class="tip-title">Beware Artificial Urgency</h4>
+          <p class="tip-desc">Scammers create time pressure — "Your account is blocked! Act within 30 minutes!" Legitimate organizations always give you time to verify. Pressure = red flag.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="tip-card">
+          <div class="tip-num">05 — INVESTMENTS</div>
+          <div class="tip-emoji">💰</div>
+          <h4 class="tip-title">No Guaranteed Returns</h4>
+          <p class="tip-desc">Any investment promising unrealistic returns (20%, 40%, 100% monthly) is almost certainly a Ponzi scheme or fraud. Walk away — if it sounds too good, it is.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="tip-card">
+          <div class="tip-num">06 — REMOTE ACCESS</div>
+          <div class="tip-emoji">🖥️</div>
+          <h4 class="tip-title">Deny Remote Access</h4>
+          <p class="tip-desc">Never install AnyDesk, TeamViewer, or similar tools at a stranger's request. This is the #1 method scammers use to steal money directly from your banking apps.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="tip-card">
+          <div class="tip-num">07 — PRIZES &amp; LOTTERIES</div>
+          <div class="tip-emoji">🎁</div>
+          <h4 class="tip-title">Lottery Scams</h4>
+          <p class="tip-desc">If you didn't enter a contest, you didn't win one. Requests to pay "taxes" or "processing fees" to claim a prize is a classic advance-fee fraud. Ignore and block.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="tip-card">
+          <div class="tip-num">08 — 2FA &amp; ALERTS</div>
+          <div class="tip-emoji">🛡️</div>
+          <h4 class="tip-title">Enable All Alerts</h4>
+          <p class="tip-desc">Turn on two-factor authentication for all financial accounts. Enable SMS and email transaction alerts for every debit so you catch unauthorized activity instantly.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="tip-card">
+          <div class="tip-num">09 — REPORTING</div>
+          <div class="tip-emoji">🚨</div>
+          <h4 class="tip-title">Report Fraud Fast</h4>
+          <p class="tip-desc">In India, call <strong style="color:var(--cyan);">1930</strong> (National Cyber Crime Helpline) or visit <strong style="color:var(--cyan);">cybercrime.gov.in</strong> immediately. The faster you report, the higher the chance of recovery.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer>
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+      <div>
+        <div class="foot-brand">
+          <i class="bi bi-shield-fill-check" style="color:var(--cyan);"></i>
+          FRAUD<span style="color:var(--cyan);">SHIELD</span> <span style="opacity:.4;font-size:.75em;">AI</span>
+        </div>
+        <div class="foot-txt mt-1">AI-powered fraud detection &amp; protection</div>
+      </div>
+      <div class="foot-txt text-md-end">
+        <div>Analysis powered by Claude AI · Data is never stored or logged</div>
+        <div class="mt-1">Not a substitute for professional security advice</div>
+        <div class="mt-1" style="color:var(--cyan);opacity:.6;">India Cyber Helpline: <strong>1930</strong></div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════ SCRIPTS ═══════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ─── API ─── */
+const API   = "https://api.anthropic.com/v1/messages";
+const MODEL = "claude-sonnet-4-20250514";
+
+async function callClaude(userPrompt, sysPrompt) {
+  const res = await fetch(API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: MODEL, max_tokens: 1000,
+      system: sysPrompt,
+      messages: [{ role: "user", content: userPrompt }]
+    })
+  });
+  const d = await res.json();
+  if (d.error) throw new Error(d.error.message);
+  return d.content.map(c => c.text || "").join("");
+}
+
+function parseJSON(raw) {
+  return JSON.parse(raw.replace(/```json|```/g, "").trim());
+}
+
+/* ─── LOADING STATE ─── */
+function setLoad(btnId, textId, loadId, on) {
+  document.getElementById(btnId).disabled = on;
+  document.getElementById(textId).classList.toggle("d-none", on);
+  document.getElementById(loadId).classList.toggle("d-none", !on);
+}
+
+/* ─── ERROR ─── */
+function showErr(id, msg) {
+  document.getElementById(id).innerHTML =
+    `<div class="r-err"><i class="bi bi-exclamation-triangle-fill"></i>${msg}</div>`;
+}
+
+/* ─── GAUGE SVG ─── */
+function gauge(score, color) {
+  const C = 2 * Math.PI * 32;
+  const off = C * (1 - score / 100);
+  return `
+<div class="gauge-svg">
+  <svg width="82" height="82" viewBox="0 0 82 82">
+    <circle class="g-bg" cx="41" cy="41" r="32"/>
+    <circle class="g-arc" cx="41" cy="41" r="32" stroke="${color}"
+      stroke-dasharray="${C}" stroke-dashoffset="${off}"/>
+  </svg>
+  <div class="gauge-num" style="color:${color}">${score}</div>
+</div>`;
+}
+
+/* ─── COLOR MAP ─── */
+function riskColor(lvl) {
+  return { low: "var(--green)", medium: "var(--amber)", high: "var(--red)", critical: "var(--red)" }[lvl] || "var(--amber)";
+}
+function riskClass(lvl) {
+  return { low: "r-low", medium: "r-medium", high: "r-high", critical: "r-critical" }[lvl] || "r-medium";
+}
+function riskIcon(lvl) {
+  return { low: "shield-check", medium: "shield-exclamation", high: "shield-x", critical: "shield-x" }[lvl] || "shield-exclamation";
+}
+
+/* ══════════════════════════════════════════════════
+   1. TRANSACTION RISK ANALYZER
+══════════════════════════════════════════════════ */
+async function analyzeTx() {
+  const amt     = document.getElementById("txAmt").value;
+  const type    = document.getElementById("txType").value;
+  const recip   = document.getElementById("txRecip").value;
+  const desc    = document.getElementById("txDesc").value;
+  const urg     = document.getElementById("txUrg").value;
+  const contact = document.getElementById("txContact").value;
+
+  if (!amt || !type) { showErr("txResult", "Please enter at least the amount and transaction type."); return; }
+
+  setLoad("txBtn","txBtnT","txBtnL", true);
+
+  const sys = `You are an expert fraud analyst. Return ONLY valid JSON — no preamble, no markdown.
+{
+  "riskScore": <integer 0-100>,
+  "riskLevel": <"low"|"medium"|"high"|"critical">,
+  "flags": [<up to 5 specific red flags as strings>],
+  "explanation": "<2–3 sentence risk explanation>",
+  "recommendations": [<exactly 3 specific action strings>]
+}`;
+
+  const prompt = `Transaction:
+- Amount: ${amt}
+- Type: ${type}
+- Recipient: ${recip || "Not specified"}
+- Description: ${desc || "None provided"}
+- Urgency: ${urg || "Not specified"}
+- How they met: ${contact || "Not specified"}
+Assess fraud risk.`;
+
+  try {
+    const r = parseJSON(await callClaude(prompt, sys));
+    const col = riskColor(r.riskLevel);
+    const flags = (r.flags || []).map(f =>
+      `<li class="f-item"><i class="bi bi-exclamation-triangle-fill"></i><span>${f}</span></li>`).join("");
+    const recs  = (r.recommendations || []).map(rc =>
+      `<li class="r-item"><i class="bi bi-check-circle-fill"></i><span>${rc}</span></li>`).join("");
+
+    document.getElementById("txResult").innerHTML = `
+<div class="r-box ${riskClass(r.riskLevel)}">
+  <div class="r-head">
+    <i class="bi bi-${riskIcon(r.riskLevel)}"></i>
+    RISK ASSESSMENT — ${r.riskLevel.toUpperCase()}
+    <span class="ms-auto" style="font-family:var(--fm);font-size:.78rem;">${r.riskScore}/100</span>
+  </div>
+  <div class="r-body">
+    <div class="gauge-wrap">
+      ${gauge(r.riskScore, col)}
+      <div class="gauge-info">
+        <div class="gauge-lvl" style="color:${col}">${r.riskLevel.toUpperCase()} RISK</div>
+        <div class="gauge-sub">Score: ${r.riskScore} / 100</div>
+        <div class="risk-bar"><div class="risk-fill" style="width:${r.riskScore}%;background:${col};"></div></div>
+      </div>
+    </div>
+    ${flags ? `<div class="r-sec-label">⚠ Red Flags Detected</div><ul class="f-list">${flags}</ul>`
+             : `<p style="color:var(--green);font-size:.84rem;margin-top:.5rem;">✓ No significant red flags detected</p>`}
+    <div class="r-sec-label">Analysis</div>
+    <div class="expl">${r.explanation}</div>
+    <div class="r-sec-label">Recommendations</div>
+    <ul class="r-list">${recs}</ul>
+  </div>
+</div>`;
+  } catch(e) {
+    showErr("txResult", "Analysis failed. Please check your API key and try again. " + e.message);
+  } finally {
+    setLoad("txBtn","txBtnT","txBtnL", false);
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   2. SCAM MESSAGE ANALYZER
+══════════════════════════════════════════════════ */
+async function analyzeScam() {
+  const msg = document.getElementById("scamMsg").value.trim();
+  const src = document.getElementById("scamSrc").value;
+
+  if (!msg) { showErr("scamResult", "Please paste a message to analyze."); return; }
+
+  setLoad("scamBtn","scamBtnT","scamBtnL", true);
+
+  const sys = `You are an expert scam detection analyst. Return ONLY valid JSON — no preamble, no markdown.
+{
+  "isScam": <true|false>,
+  "confidence": <integer 0-100>,
+  "verdict": <"SCAM"|"SUSPICIOUS"|"LIKELY SAFE">,
+  "scamType": "<type of scam or null>",
+  "redFlags": [<specific red flags as strings, or empty array>],
+  "explanation": "<2–3 sentence analysis>",
+  "safetyAdvice": "<specific actionable advice>"
+}`;
+
+  const prompt = `Message source: ${src || "Unknown"}\nMessage text:\n"${msg}"\nDetect if this is a scam.`;
+
+  try {
+    const r = parseJSON(await callClaude(prompt, sys));
+    const isScam = r.verdict === "SCAM";
+    const isSusp = r.verdict === "SUSPICIOUS";
+    const col    = isScam ? "var(--red)" : isSusp ? "var(--amber)" : "var(--green)";
+    const vc     = isScam ? "danger" : isSusp ? "warn" : "safe";
+    const emoji  = isScam ? "🚨" : isSusp ? "⚠️" : "✅";
+    const rc     = isScam ? "r-high" : isSusp ? "r-medium" : "r-low";
+    const flags  = (r.redFlags || []).map(f =>
+      `<li class="f-item"><i class="bi bi-exclamation-triangle-fill"></i><span>${f}</span></li>`).join("");
+
+    document.getElementById("scamResult").innerHTML = `
+<div class="r-box ${rc}">
+  <div class="r-head">
+    <i class="bi bi-${isScam ? "shield-x" : isSusp ? "shield-exclamation" : "shield-check"}"></i>
+    VERDICT: ${r.verdict}
+    <span class="ms-auto" style="font-family:var(--fm);font-size:.78rem;color:${col};">${r.confidence}% confidence</span>
+  </div>
+  <div class="r-body">
+    <div class="v-banner ${vc}">
+      <div class="v-emoji">${emoji}</div>
+      <div>
+        <div class="v-title" style="color:${col}">${r.verdict}</div>
+        <div class="v-sub">${r.scamType ? "Scam Type: " + r.scamType : "No scam indicators found"}</div>
+      </div>
+    </div>
+    <div class="conf-row"><span>Detection Confidence</span><span style="color:${col}">${r.confidence}%</span></div>
+    <div class="risk-bar"><div class="risk-fill" style="width:${r.confidence}%;background:${col};"></div></div>
+    ${flags ? `<div class="r-sec-label">⚠ Red Flags</div><ul class="f-list">${flags}</ul>`
+             : `<p style="color:var(--green);font-size:.84rem;margin-top:.8rem;">✓ No scam patterns detected</p>`}
+    <div class="r-sec-label">Analysis</div>
+    <div class="expl">${r.explanation}</div>
+    <div class="r-sec-label">Safety Advice</div>
+    <div class="expl" style="border-left-color:${col};">${r.safetyAdvice}</div>
+  </div>
+</div>`;
+  } catch(e) {
+    showErr("scamResult", "Analysis failed. Please check your API key and try again. " + e.message);
+  } finally {
+    setLoad("scamBtn","scamBtnT","scamBtnL", false);
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   3. PHISHING URL CHECKER
+══════════════════════════════════════════════════ */
+async function analyzePhish() {
+  const url   = document.getElementById("phUrl").value.trim();
+  const ctx   = document.getElementById("phCtx").value;
+  const claim = document.getElementById("phClaim").value;
+
+  if (!url) { showErr("phResult", "Please enter a URL to analyze."); return; }
+
+  setLoad("phBtn","phBtnT","phBtnL", true);
+
+  const sys = `You are a cybersecurity expert specializing in phishing URL analysis. Return ONLY valid JSON — no preamble, no markdown.
+{
+  "isPhishing": <true|false>,
+  "riskLevel": <"low"|"medium"|"high"|"critical">,
+  "riskScore": <integer 0-100>,
+  "verdict": <"PHISHING"|"SUSPICIOUS"|"LIKELY SAFE"|"SAFE">,
+  "suspiciousIndicators": [<specific indicators as strings, or empty array>],
+  "domainAnalysis": "<analysis of domain structure, lookalike patterns, suspicious TLD, etc.>",
+  "explanation": "<2–3 sentence overall analysis>",
+  "recommendation": "<specific action to take>"
+}`;
+
+  const prompt = `URL: ${url}
+Context: ${ctx || "Not specified"}
+Claimed purpose: ${claim || "Not specified"}
+Analyze for phishing indicators based on URL structure and context.`;
+
+  try {
+    const r = parseJSON(await callClaude(prompt, sys));
+    const col  = riskColor(r.riskLevel);
+    const rc   = riskClass(r.riskLevel);
+    const inds = (r.suspiciousIndicators || []).map(i =>
+      `<li class="f-item"><i class="bi bi-x-circle-fill" style="color:var(--red);"></i><span>${i}</span></li>`).join("");
+
+    document.getElementById("phResult").innerHTML = `
+<div class="r-box ${rc}">
+  <div class="r-head">
+    <i class="bi bi-${riskIcon(r.riskLevel)}"></i>
+    URL VERDICT: ${r.verdict}
+    <span class="ms-auto" style="font-family:var(--fm);font-size:.78rem;">${r.riskScore}/100</span>
+  </div>
+  <div class="r-body">
+    <div class="url-tag">
+      <div class="lbl">ANALYZED URL</div>
+      <div class="val">${url}</div>
+    </div>
+    <div class="gauge-wrap">
+      ${gauge(r.riskScore, col)}
+      <div class="gauge-info">
+        <div class="gauge-lvl" style="color:${col}">${r.verdict}</div>
+        <div class="gauge-sub">Phishing Risk: ${r.riskScore} / 100</div>
+        <div class="risk-bar"><div class="risk-fill" style="width:${r.riskScore}%;background:${col};"></div></div>
+      </div>
+    </div>
+    ${inds ? `<div class="r-sec-label">⚠ Suspicious Indicators</div><ul class="f-list">${inds}</ul>`
+            : `<p style="color:var(--green);font-size:.84rem;margin-top:.5rem;">✓ No suspicious patterns found in URL structure</p>`}
+    <div class="r-sec-label">Domain Analysis</div>
+    <div class="expl">${r.domainAnalysis}</div>
+    <div class="r-sec-label">Recommendation</div>
+    <div class="expl" style="border-left-color:${col};">${r.recommendation}</div>
+  </div>
+</div>`;
+  } catch(e) {
+    showErr("phResult", "Analysis failed. Please check your API key and try again. " + e.message);
+  } finally {
+    setLoad("phBtn","phBtnT","phBtnL", false);
+  }
+}
+
+/* ─── SMOOTH SCROLL (offset for sticky nav) ─── */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener("click", e => {
+    e.preventDefault();
+    const t = document.querySelector(a.getAttribute("href"));
+    if (t) window.scrollTo({ top: t.getBoundingClientRect().top + scrollY - 76, behavior: "smooth" });
+  });
+});
+</script>
+</body>
+</html>
